@@ -25,72 +25,6 @@ var UsersList = React.createClass({
 	}
 });
 
-var Message = React.createClass({
-	render() {
-		return (
-			<div className="message">
-				<strong>{this.props.user} :</strong> 
-				<span>{this.props.text}</span>		
-			</div>
-		);
-	}
-});
-
-var MessageList = React.createClass({
-	render() {
-		return (
-			<div className='messages'>
-				<h2> Conversation: </h2>
-				{
-					this.props.messages.map((message, i) => {
-						return (
-							<Message
-								key={i}
-								user={message.user}
-								text={message.text} 
-							/>
-						);
-					})
-				} 
-			</div>
-		);
-	}
-});
-
-var MessageForm = React.createClass({
-
-	getInitialState() {
-		return {text: ''};
-	},
-
-	handleSubmit(e) {
-		e.preventDefault();
-		var message = {
-			user : this.props.user,
-			text : this.state.text
-		}
-		this.props.onMessageSubmit(message);	
-		this.setState({ text: '' });
-	},
-
-	changeHandler(e) {
-		this.setState({ text : e.target.value });
-	},
-
-	render() {
-		return(
-			<div className='message_form'>
-				<h3>Write New Message</h3>
-				<form onSubmit={this.handleSubmit}>
-					<input
-						onChange={this.changeHandler}
-						value={this.state.text}
-					/>
-				</form>
-			</div>
-		);
-	}
-});
 
 var ChangeNameForm = React.createClass({
 	getInitialState() {
@@ -182,9 +116,14 @@ var CardUI = React.createClass({
         if (optionId == "submit"){
             var player = this.props.currUser;
             var playedCard = this.getSelectedCards();
-            var data = {player: player, playedCard: playedCard};
-            this.props.handleSubmitButton(data);
-            this.resetCardStatus();
+            if (playedCard.length == 0){
+                alert("choose one card");
+            }
+            else {
+                var data = {player: player, playedCard: playedCard};
+                this.props.handleSubmitButton(data);
+                this.resetCardStatus();
+            }
         }
         else if (optionId == "check"){
             var player = this.props.currUser;
@@ -228,11 +167,11 @@ var CardUI = React.createClass({
                         if (number == 13){
                             number = 'king';
                         }
-                        console.log("----------------------");
-                        console.log(number, trait, this.state.traitList[trait]);
+                        // console.log("----------------------");
+                        // console.log(number, trait, this.state.traitList[trait]);
                         var cardImgName = String(number) + "_of_" + String(this.state.traitList[trait]) + ".png";
-                        console.log(cardImgName);
-                        console.log("0-------------------");
+                        // console.log(cardImgName);
+                        // console.log("0-------------------");
                         var imgPath = "images/PNG-cards-1.3/" + String(cardImgName);
                         if (btnStatus == 'selected'){
                             buttonValue = <button id={i} className="displaySelectedCard" onClick={this.handleClick}>
@@ -251,17 +190,31 @@ var CardUI = React.createClass({
                 }
             </div>;
             if (this.props.userChanceBool == true){
+                var passBtnUI = <button id="pass" onClick={this.handleOptionClick} className="btnPass">pass</button>;
+                var submitBtnUI= <button id="submit" onClick={this.handleOptionClick} className="btnSubmit">submit</button>;
+                var checkBtnUI= <button id="check" onClick={this.handleOptionClick} className="btnCheck">check</button>;
+                if (this.props.checkNewTurn()){
+                    checkBtnUI= <button id="check" className="disabledBtnCheck">check</button>;
+                }
+                var playedCard = this.getSelectedCards();
+                if (playedCard.length == 0){
+                    submitBtnUI= <button id="submit" onClick={this.handleOptionClick} className="disabledBtnSubmit">submit</button>;
+                }
                 playerOptions =
-                    <div>
-                        <button id="pass" onClick={this.handleOptionClick} className="btnPass">pass</button>
-                        <button id="submit" onClick={this.handleOptionClick} className="btnSubmit">submit</button>
-                        <button id="check" onClick={this.handleOptionClick} className="btnCheck">check</button>
+                    <div className="optionButtonUI">
+                        {passBtnUI}
+                        {submitBtnUI}
+                        {checkBtnUI}
                     </div>
             }
         }
         else{
-            displayText =
-                <h3 className="playerCardsCnt">{this.props.cards.length}</h3>
+            var cardCntClass = "playerCardsCnt" + String(this.props.position);
+            var cardClass = "playerCards" + String(this.props.position);
+            displayText = <div>
+                <img src="images/abc.png" className={cardClass}/>
+                <div className={cardCntClass}>{this.props.cards.length}</div>
+            </div>
         }
         return(
             <div>
@@ -296,15 +249,8 @@ var PlayerUI = React.createClass({
                     var userChance = this.props.userChance;
                     var userChanceBool = false;
                     var moveInfo = moveInfoHistory[i];
+                    console.log(i, moveInfo);
                     var playerMoveInfo = null;
-                    // console.log(playerMoveInfo);
-                    // console.log("userChance - " + String(userChance) + ", " + "i - " + String(i));
-                    if (moveInfo && moveInfo['move']) {
-                        var divClass = "move" + moveInfo['move'];
-                        // console.log("err", moveInfo, this.props.users[i]);
-                        playerMoveInfo = <div className={divClass}>{moveInfo['display']}</div>;
-                    }
-
                     if (i == userChance){
                         userChanceBool = true;
                         // console.log("here in playerui");
@@ -314,6 +260,27 @@ var PlayerUI = React.createClass({
                             playerMoveInfo = <div className="moveplaying">playing...</div>
                         }
                     }
+                    else {
+                        playerMoveInfo = <div className="emptyMoveDiv">playing...</div>;
+                    }
+                    // console.log(playerMoveInfo);
+                    // console.log("userChance - " + String(userChance) + ", " + "i - " + String(i));
+                    if (moveInfo && moveInfo['move']) {
+                        var divClass = "move" + moveInfo['move'];
+                        // console.log("err", moveInfo, this.props.users[i]);
+                        if (moveInfo['move'] == 'submit'){
+                            var d = {color: "yellow"};
+                            playerMoveInfo = <div className={divClass}>
+                                <span style={{color: "black"}}> {moveInfo['display']} </span>
+                                <span style={d}> {this.props.baseCard}</span>
+                            </div>;
+                        }
+                        else {
+                            playerMoveInfo = <div className={divClass}>{moveInfo['display']}</div>;
+                        }
+                    }
+
+
                     // console.log(userChanceBool);
 
                     if (user != currUser) {
@@ -327,7 +294,8 @@ var PlayerUI = React.createClass({
                             cards={this.props.cards}
                             baseCard={this.props.baseCard}
                             userChanceBool={userChanceBool}
-                            setMoveInfo = {this.setMoveInfo}
+                            position={position}
+                            checkNewTurn={this.props.checkNewTurn}
                             handleSubmitButton={this.props.handleSubmitButton}
                             handleCheckButton={this.props.handleCheckButton}
                             handlePassButton={this.props.handlePassButton}
@@ -350,10 +318,10 @@ var PlayerUI = React.createClass({
 var TableUI = React.createClass({
     getInitialState() {
         var rankList = [];
-        for (var i = 0 ; i < 14 ; i++){
+        for (var i = 1 ; i < 14 ; i++){
             var rankInfo = {};
             var name = String(i);
-            if (i==0){
+            if (i==1){
                 name = 'A';
             }
             if (i==11){
@@ -402,11 +370,33 @@ var TableUI = React.createClass({
     toggle(){
         // console.log(this.state);
         if (this.state.showList){
+            this.props.setModalUI("hide");
             this.setState({showList: false});
         }
         else{
+            this.props.setModalUI("show");
             this.setState({showList: true});
         }
+    },
+
+    getBaseCardName(baseCard){
+        if (!baseCard){
+            return 'Choose card';
+        }
+        baseCard = parseInt(baseCard);
+        if (baseCard==1){
+            return 'A';
+        }
+        if (baseCard==11){
+            return 'J';
+        }
+        if (baseCard==12){
+            return 'Q';
+        }
+        if (baseCard==13){
+            return 'K';
+        }
+        return String(baseCard);
     },
 
     render(){
@@ -427,31 +417,35 @@ var TableUI = React.createClass({
         // console.log(userChanceBool);
         // console.log("----");
         if (newTurn == 0){
-            var cnt = <h3>{this.props.tableCardsCnt}</h3>;
-            var baseCard = <h3>Base Card: {this.props.baseCard}</h3>;
-            var tableInfo = <div>
-                {cnt}
-                {baseCard}
-            </div>
+            var cnt = this.props.tableCardsCnt;
+            // var tableInfo = <div className="tableInfo">Base Card: {this.props.baseCard}</div>;
+            var baseCardSelector =
+                <div>
+                    <span className="dropdown-display-disabled">{this.getBaseCardName(this.props.baseCard)}</span>
+                </div>;
+            var tableCardsUI = <div>
+                <img src="images/abc.png" className="displayTableCard"/>;
+                <div className="displayTableCnt">{cnt}</div>;
+            </div>;
         }
         else{
-            var tableInfo = <div>
-                <h3>{users[userChance]} playing...</h3>
-            </div>
+            // var tableInfo = <div className="tableInfo">Choose base card
+            // </div>
         }
         if (userChanceBool && newTurn){
-            tableInfo = <h3>Base Card</h3>
+            // var tableInfo = <div className="tableInfo">Choose Base Card</div>;
             var baseCardSelector =
                 <div onClick={this.toggle}>
-                    <span className="dropdown-display">{this.props.baseCard}</span>
+                    <span className="dropdown-display">{this.getBaseCardName(this.props.baseCard)}</span>
                 </div>;
-            if (this.state.showList) {
-                var rankListUI = <div className="myModal">
-                        <div className="rankList">{this.renderListItems()}</div></div>;
-            }
+            // if (this.state.showList){
+            //
+            //     var rankListUI = <div className="myModal">
+            //             <div className="rankList">{this.renderListItems()}</div></div>;
+            // }
         }
         if (this.props.displayCards){
-            console.log("display cards", this.props.displayCards);
+            // console.log("display cards", this.props.displayCards);
             var displayCardUI = <div className="displayModal">
                 <div className="displayCardUI"> {
                     this.props.displayCards.map((card, i) => {
@@ -471,9 +465,9 @@ var TableUI = React.createClass({
                             number = 'king';
                         }
                         var cardImgName = String(number) + "_of_" + String(this.state.traitList[trait]) + ".png";
-                        console.log(cardImgName);
+                        // console.log(cardImgName);
                         var imgPath = "images/PNG-cards-1.3/" + String(cardImgName);
-                        console.log(imgPath);
+                        // console.log(imgPath);
                         buttonValue =
                             <button id={i} className="displayDefaultCard">
                                 <img id={i} src={imgPath} className="displayDefaultImage"/>
@@ -489,17 +483,204 @@ var TableUI = React.createClass({
         return(
             <div className="tableUI">
                 {displayCardUI}
-                {tableInfo}
+                
+                {tableCardsUI}
                 {baseCardSelector}
-                {rankListUI}
             </div>
         );
     }
 });
 
+var Message = React.createClass({
+    render() {
+        if (this.props.type == "normal") {
+            var msgStyle = {flexDirection: "row-reverse"};
+            var colorMsgStyle = {color: "white", backgroundColor: "#3088bb", marginLeft: "37px", marginRight: "3px"};
+        }
+        else{
+            var userName = <strong>{this.props.user}: </strong>;
+            var colorMsgStyle = {marginRight: "37px", marginLeft: "3px"};
+        }
+
+        return (
+            <div className="message" style={msgStyle}>
+                <div className="colorMessage" style={colorMsgStyle}>
+                    {userName}
+                    <span>{this.props.text}</span>
+                </div>
+            </div>
+        );
+    }
+});
+
+var MessageList = React.createClass({
+    render() {
+        return (
+            <div className='messages'>
+                {
+                    this.props.messages.map((message, i) => {
+                        return (
+                            <Message
+                                key={i}
+                                user={message.user}
+                                text={message.text}
+                                type={message.type}
+                            />
+                        );
+                    })
+                }
+            </div>
+        );
+    }
+});
+
+var MessageForm = React.createClass({
+
+    getInitialState() {
+        return {text: ''};
+    },
+
+    handleSubmit(e) {
+        e.preventDefault();
+        var message = {
+            user : this.props.user,
+            text : this.state.text
+        };
+        this.props.onMessageSubmit(message);
+        this.setState({ text: '' });
+    },
+
+    changeHandler(e) {
+        this.setState({ text : e.target.value });
+    },
+
+    render() {
+        return(
+            <div className='message_form'>
+                <form onSubmit={this.handleSubmit}>
+                    <input
+                        onChange={this.changeHandler}
+                        value={this.state.text}
+                        placeholder="type a message"
+                        maxLength="50"
+                        className="inputMsg"
+                    />
+                </form>
+            </div>
+        );
+    }
+});
+
+var MessageTab = React.createClass({
+    getInitialState(){
+        return {showFlag: true};
+    },
+
+    handleClick(e){
+        console.log("here");
+        e.preventDefault();
+        var tmpShowFlag = !(this.state.showFlag);
+        console.log(this.state.showFlag, tmpShowFlag);
+        this.setState({showFlag: tmpShowFlag});
+        this.props.setMessageBar(tmpShowFlag);
+    },
+
+    render(){
+        if (this.state.showFlag){
+            var tabClass = "messageTabUI-open";
+        }
+        else{
+            var tabClass = "messageTabUI-close";
+        }
+        return(
+            <div className={tabClass} onClick={this.handleClick}>
+
+            </div>
+        );
+    }
+});
+
+var MessageBar = React.createClass({
+    getInitialState(){
+        return {messages: [], showMessageBar: true}
+    },
+
+    componentDidMount() {
+        socket.on('send:message', this._messageRecieve);
+    },
+
+    scrollElement(messageBar){
+        window.requestAnimationFrame(function(){
+           messageBar.getDOMNode().scrollTop = messageBar.getDOMNode().scrollHeight;
+        });
+    },
+
+    componentDidUpdate(){
+        if (this.domMessageBar) {
+            console.log("here in refs");
+            console.log(this.domMessageBar.getDOMNode().scrollHeight, this.domMessageBar.getDOMNode().offsetTop);
+            // this.scrollElement(this.domMessageBar);
+            this.domMessageBar.getDOMNode().scrollTop = this.domMessageBar.getDOMNode().scrollHeight;
+        }
+    },
+
+    _messageRecieve(message) {
+        var {messages} = this.state;
+        message['type'] = "reverse";
+        messages.push(message);
+        this.setState({messages});
+    },
+
+    onMessageSubmit(message){
+        var {messages} = this.state;
+        socket.emit('send:message', message);
+        message['type'] = "normal";
+        messages.push(message);
+        this.setState({messages});
+    },
+
+    setMessageBar(flag){
+        console.log(flag);
+        this.setState({showMessageBar: flag});
+    },
+
+    render(){
+        if (this.state.showMessageBar) {
+            console.log("here in return");
+            var messageBar =
+                <div className="messageBarUI"
+                    >
+                    <MessageList ref={messageBar => {this.domMessageBar = messageBar;}}
+                        messages={this.state.messages}
+                    />
+                    <MessageForm
+                        user={this.props.user}
+                        onMessageSubmit={this.onMessageSubmit}
+                    />
+                </div>;
+            // var domNode = this.domMessageBar.getDOMNode();
+            // console.log(domNode);
+            // domNode.scrollTop = domNode.scrollHeight;
+            // this.domMessageBar.scrollHeight;
+
+        }
+        return(
+            <div>
+                <MessageTab
+                    setMessageBar={this.setMessageBar}
+                />
+                {messageBar}
+
+            </div>
+        );
+    }
+});
+
+
 var GameUI = React.createClass({
     getInitialState(){
-        return {users: [], displayCards: null, moveInfoHistory: [], baseCard: '', messages:[], text: '', tableCardsCnt: "0", newTurn: 1}
+        return {users: [], displayCards: null, moveInfoHistory: [], baseCard: '1', messages:[], text: '',
+            tableCardsCnt: "0", newTurn: 1, introPageFlag: false, gamePageFlag: true, endPageFlag: false}
     },
 
     componentDidMount() {
@@ -517,12 +698,40 @@ var GameUI = React.createClass({
         socket.on('setBase:card', this._setBaseCard);
         socket.on('display:move', this._displayMove);
         socket.on('clear:display', this._clearDisplay);
+        socket.on('game:over', this._gameOver);
     },
 
     _initialize(data) {
         console.log(data);
         var {users, name, cards} = data;
         this.setState({users:users, user: name, cards:cards});
+        var rankList = [];
+        for (var i = 1 ; i < 14 ; i++){
+            var rankInfo = {};
+            var name = String(i);
+            if (i==1){
+                name = 'A';
+            }
+            if (i==11){
+                name = 'J';
+            }
+            if (i==12){
+                name = 'Q';
+            }
+            if (i==13){
+                name = 'K';
+            }
+            rankInfo['name'] = name;
+            rankInfo['value'] = i;
+            rankList.push(rankInfo);
+        }
+        var traitList = [];
+        traitList.push('dummy');
+        traitList.push('clubs');
+        traitList.push('diamonds');
+        traitList.push('spades');
+        traitList.push('hearts');
+        this.setState({rankList: rankList, showList: false, selectedRank: "choose rank", traitList:traitList});
     },
 
     _messageRecieve(message) {
@@ -598,10 +807,46 @@ var GameUI = React.createClass({
         this.setState({cards: cards});
     },
 
+    clearUI(){
+        console.log("here in clearUI");
+        this.setState({animationUI: {}});
+    },
+
     _updateTable(data){
-        // console.log("in _updateTable");
+        console.log("in _updateTable");
         // console.log(data);
-        var {tableCardsCnt, newTurn} = data;
+        var {tableCardsCnt, newTurn, displayAnimation} = data;
+        console.log(displayAnimation);
+        if (displayAnimation){
+            var {player, cardCnt, move} = displayAnimation;
+            console.log(player, cardCnt, move);
+            if (move == "add"){
+                var currPlayerIndex = this.state.users.indexOf(player);
+                var pos = this.getPosition(this.state.user, currPlayerIndex);
+                var imgPath = "images/abc.png";
+                var playerClass = "animateAddingCard" + String(pos);
+                console.log(playerClass);
+                var animationUI = <div className={playerClass}>
+                    <img src={imgPath} className="displayDefaultImage"/>
+                </div>;
+                console.log(animationUI);
+                this.setState({animationUI: animationUI});
+            }
+            if (move == "del"){
+                var currPlayerIndex = this.state.users.indexOf(player);
+                var pos = this.getPosition(this.state.user, currPlayerIndex);
+                var imgPath = "images/abc.png";
+                var playerClass = "animateDelCard" + String(pos);
+                console.log(playerClass);
+                var animationUI = <div className={playerClass}>
+                    <img src={imgPath} className="displayDefaultImage"/>
+                </div>;
+                console.log(animationUI);
+                this.setState({animationUI: animationUI});
+            }
+            setTimeout(this.clearUI, 900);
+        }
+
         if (newTurn == 1){
             this.setState({moveInfoHistory: [], baseCard: ''});
         }
@@ -634,16 +879,17 @@ var GameUI = React.createClass({
             var {player, cnt, baseCard, moveType} = moveInfo;
             var display = '';
             if (moveType == 'submit'){
-                display = String(cnt) + " " + String(this.getBaseCardName(baseCard));            }
+                display = String(cnt);
+            }
             else if(moveType == 'pass'){
                 display = 'pass';
             }
             else{
                 display = 'check';
             }
-            // console.log(this.state.users.indexOf(player), display);
-            // console.log("***********");
-            tmpMoveInfoHistory[this.state.users.indexOf(player)] = {display: display, move:moveType};
+            console.log(this.state.users.indexOf(player), display);
+            console.log("***********");
+            tmpMoveInfoHistory[this.state.users.indexOf(player)] = {display: display, move: moveType};
         }
         console.log('in display move');
         console.log(tmpMoveInfoHistory);
@@ -651,11 +897,21 @@ var GameUI = React.createClass({
         this.setState({moveInfoHistory: tmpMoveInfoHistory});
         if (topCards) {
             this.setState({displayCards: topCards});
-            setTimeout(this._clearDisplay, 3000);
+            setTimeout(this.clearCards, 2000);
         }
     },
 
-    _clearDisplay(data){
+    _gameOver(data){
+        console.log(data);
+        alert(data['winner']);
+    },
+
+    getPosition(user, currPlayerIndex){
+        var startingIndex = this.state.users.indexOf(user);
+        return (4+currPlayerIndex-startingIndex)%4;
+    },
+
+    clearCards(data){
         this.setState({displayCards: null});
     },
 
@@ -707,6 +963,34 @@ var GameUI = React.createClass({
         return String(baseCard);
     },
 
+    select(item){
+        // this.setState({selectedRank: item.name});
+        this.child.toggle();
+        this.setNewBaseCard(item);
+    },
+
+    renderListItems(){
+        var items = [];
+        for (var i = 0 ; i < this.state.rankList.length; i++){
+            var item = this.state.rankList[i];
+            items.push(<div onClick={this.select.bind(null, item)} className="rankItem">{item.name}
+            </div>);
+        }
+        return items;
+    },
+
+    setModalUI(data){
+        console.log(data);
+        if (data == "show"){
+            var rankListUI = <div className="myModal">
+                    <div className="rankList">{this.renderListItems()}</div></div>;
+            this.setState({modalUI: rankListUI});
+        }
+        if (data == "hide"){
+            this.setState({modalUI: null});
+        }
+    },
+
     sleep(milliseconds) {
         var start = new Date().getTime();
         for (var i = 0 ; i<100; i) {
@@ -716,21 +1000,20 @@ var GameUI = React.createClass({
         }
     },
 
+    checkNewTurn(){
+        return this.state.newTurn;
+    },
+
     render() {
+        var animationUI = this.state.animationUI;
+        var modalUI = this.state.modalUI;
+        // console.log("main ", animationUI);
         return(
             <div>
-                <PlayerUI
-                    users={this.state.users}
+                <MessageBar
                     user={this.state.user}
-                    cards={this.state.cards}
-                    userChance={this.state.userChance}
-                    baseCard={this.state.baseCard}
-                    moveInfoHistory={this.state.moveInfoHistory}
-                    handleSubmitButton={this.handleSubmitButton}
-                    handleCheckButton={this.handleCheckButton}
-                    handlePassButton={this.handlePassButton}
                 />
-                <TableUI
+                <TableUI ref={instance => { this.child = instance; }}
                     tableCardsCnt={this.state.tableCardsCnt}
                     baseCard={this.state.baseCard}
                     newTurn={this.state.newTurn}
@@ -739,114 +1022,26 @@ var GameUI = React.createClass({
                     userChance={this.state.userChance}
                     displayCards={this.state.displayCards}
                     setNewBaseCard={this.setNewBaseCard}
+                    setModalUI={this.setModalUI}
                 />
-            </div>
-        );
-    }
-});
-
-var ChatApp = React.createClass({
-
-	getInitialState() {
-		return {users: [], messages:[], text: ''};
-	},
-
-	componentDidMount() {
-		socket.on('init', this._initialize);
-		socket.on('send:message', this._messageRecieve);
-		socket.on('user:join', this._userJoined);
-		socket.on('user:left', this._userLeft);
-		socket.on('change:name', this._userChangedName);
-        socket.on('game:start', this._gameStart);
-	},
-
-	_initialize(data) {
-		var {users, name} = data;
-        var cards = [];
-        cards.push(1);
-        cards.push(2);
-		this.setState({users, user: name, cards:cards});
-	},
-
-	_messageRecieve(message) {
-		var {messages} = this.state;
-		messages.push(message);
-		this.setState({messages});
-	},
-
-	_userJoined(data) {
-		var {users, messages} = this.state;
-		var {name} = data;
-		users.push(name);
-		messages.push({
-			user: 'APPLICATION BOT',
-			text : name +' Joined'
-		});
-		this.setState({users, messages});
-	},
-
-	_userLeft(data) {
-		var {users, messages} = this.state;
-		var {name} = data;
-		var index = users.indexOf(name);
-		users.splice(index, 1);
-		messages.push({
-			user: 'APPLICATION BOT',
-			text : name +' Left'
-		});
-		this.setState({users, messages});
-	},
-
-	_userChangedName(data) {
-		var {oldName, newName} = data;
-		var {users, messages} = this.state;
-		var index = users.indexOf(oldName);
-		users.splice(index, 1, newName);
-		messages.push({
-			user: 'APPLICATION BOT',
-			text : 'Change Name : ' + oldName + ' ==> '+ newName
-		});
-		this.setState({users, messages});
-	},
-
-    _gameStart(data) {
-        console.log("userChance" + data);
-        var {userChance} = data;
-        this.setState({userChance: userChance});
-    },
-
-	handleMessageSubmit(message) {
-		var {messages} = this.state;
-		messages.push(message);
-		this.setState({messages});
-		socket.emit('send:message', message);
-	},
-
-	handleChangeName(newName) {
-		var oldName = this.state.user;
-		socket.emit('change:name', { name : newName}, (result) => {
-			if(!result) {
-				return alert('There was an error changing your name');
-			}
-			var {users} = this.state;
-			var index = users.indexOf(oldName);
-			users.splice(index, 1, newName);
-			this.setState({users, user: newName});
-		});
-	},
-
-	render() {
-		return (
-			<div>
-				<GameUI
+                <PlayerUI
                     users={this.state.users}
                     user={this.state.user}
                     cards={this.state.cards}
                     userChance={this.state.userChance}
+                    baseCard={this.state.baseCard}
+                    moveInfoHistory={this.state.moveInfoHistory}
+                    checkNewTurn={this.checkNewTurn}
+                    handleSubmitButton={this.handleSubmitButton}
+                    handleCheckButton={this.handleCheckButton}
+                    handlePassButton={this.handlePassButton}
                 />
-			</div>
-		);
-	}
+                {modalUI}
+                {animationUI}
+
+            </div>
+        );
+    }
 });
 
 React.render(<GameUI/>, document.getElementById('app'));

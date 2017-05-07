@@ -127,6 +127,7 @@ var cardTracker = (function () {
         tmpCards.push(cards[i]);
       }
       playerCards[player] = tmpCards;
+      sortCards(player);
     }
     else if (action == "delete")
     {
@@ -140,7 +141,9 @@ var cardTracker = (function () {
         }
       }
       playerCards[player] = tmpCards;
+      sortCards(player);
     }
+
     console.log(playerCards);
     return true;
   };
@@ -161,7 +164,28 @@ var cardTracker = (function () {
       deckCards.splice(randNum, 1);
     }
     playerCards[name] = tmpCards;
+    tmpCards = sortCards(name);
     return tmpCards;
+  };
+
+  var sortCards = function(name) {
+    var cards = playerCards[name];
+    var sortedCards = cards.sort(function(a,b){
+      return (a%100 - b%100);
+    });
+    playerCards[name] = sortedCards;
+    console.log(sortedCards);
+    return sortedCards;
+  };
+
+  var checkWinner = function(users){
+    for (var i = 0 ; i < users.length ; i++){
+      var cards = playerCards[users[i]];
+      if (cards.length == 0){
+        return users[i];
+      }
+    }
+    return null;
   };
 
   return {
@@ -169,7 +193,9 @@ var cardTracker = (function () {
     cardUpdate: cardUpdate,
     get: get,
     getCards: getCards,
-    initCards: initCards
+    initCards: initCards,
+    sortCards: sortCards,
+    checkWinner: checkWinner
   };
 }());
 
@@ -355,6 +381,13 @@ module.exports = function (io) {
       var player = data.player;
       var playedCard = data.playedCard;
       var baseCard = data.baseCard;
+      var winner = cardTracker.checkWinner(userNames.get());
+      console.log("winner is ", winner);
+
+      if (winner){
+        var data = {winner: winner};
+        io.emit('game:over', data);
+      }
       var x = cardTracker.cardUpdate(player, playedCard, "delete");
       tableTracker.addNewMove(player, playedCard, baseCard, 'submit');
       io.emit('display:move', {moveInfoList: tableTracker.getMoveInfo()});
@@ -375,11 +408,12 @@ module.exports = function (io) {
               });
           }
         tableTracker.setNewTurn(0);
-        
-        var data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn()};
+        var displayAnimation = {player: player, cardCnt: playedCard.length, move: 'add'};
+        var data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn(), displayAnimation: displayAnimation};
           io.emit('update:table', data);
           data = {playerName: player, cardCount: playedCard.length, baseCard: baseCard};
           io.emit('last:submit', data);
+
       }
       else {
         socket.emit('submit:button', {
@@ -416,10 +450,12 @@ module.exports = function (io) {
           });
         }
         tableTracker.cleanTable();
-        data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn()};
+        var displayAnimation = {player: losingPlayer, cardCnt: allCards.length, move: 'del'};
+        data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn(), displayAnimation: displayAnimation};
         io.emit('update:table', data);
         io.to(userNames.getSocketId(losingPlayer)).emit('cards:update',{
-          cards: cardTracker.getCards(losingPlayer)
+          cards: cardTracker.getCards(losingPlayer),
+          type: "add"
         });
       }
     });
