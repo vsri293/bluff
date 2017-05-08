@@ -16,7 +16,10 @@ var userNames = (function () {
   var getGuestName = function () {
     var name,
       nextUserId = 1;
-
+    var users = get();
+    if (users.length > 3){
+      return false;
+    }
     do {
       name = 'Guest ' + nextUserId;
       nextUserId += 1;
@@ -200,10 +203,10 @@ var cardTracker = (function () {
 }());
 
 var tableTracker = (function(){
-  
+
   var tableHistory = [];
   var tableCardsCnt = 0;
-    var newTurn = 1;
+  var newTurn = 1;
   var moveInfo = [];
 
   var addCards = function(player, cards, baseCard){
@@ -338,10 +341,103 @@ var tableTracker = (function(){
 }());
 
 var consecutivePasses = 0;
+
+var roomTracker = (function(){
+
+  var freeRooms = ['room0', 'room1', 'room2'];
+  var busyRooms = [];
+  var allVariables = {};
+
+  var createRoom = function(){
+    if (freeRooms.length > 0){
+      var newRoom = freeRooms[0];
+      freeRooms.splice(0, 1);
+      busyRooms.push(newRoom);
+      console.log(freeRooms, busyRooms);
+      var tmpVariablesDict = {};
+      tmpVariablesDict['userNames'] = userNames;
+      tmpVariablesDict['userChanceTracker'] = userChanceTracker;
+      tmpVariablesDict['cardTracker'] = cardTracker;
+      tmpVariablesDict['tableTracker'] = tableTracker;
+      tmpVariablesDict['consecutivePasses'] = consecutivePasses;
+      allVariables[newRoom] = tmpVariablesDict;
+      return newRoom;
+    }
+    else{
+      return false;
+    }
+  };
+
+  var checkExistRoom = function(room){
+    var index = busyRooms.indexOf(room);
+    if (index > -1) {
+      return true;
+    }
+    else{
+      return false;
+    }
+  };
+
+  var getUserNames = function (room) {
+    if (checkExistRoom(room)) {
+      return allVariables[room]['userNames'];
+    }
+    else{
+      return false;
+    }
+  };
+
+  var getUserChanceTracker = function(room){
+    if (checkExistRoom(room)) {
+      return allVariables[room]['userChanceTracker'];
+    }
+    else{
+      return false;
+    }
+  };
+
+  var getCardTracker = function (room) {
+    if (checkExistRoom(room)) {
+      return allVariables[room]['cardTracker'];
+    }
+    else{
+      return false;
+    }
+  };
+
+  var getTableTracker = function (room) {
+    if (checkExistRoom(room)) {
+      return allVariables[room]['tableTracker'];
+    }
+    else{
+      return false;
+    }
+  };
+
+  var getConsecutivePasses = function (room) {
+    if (checkExistRoom(room)) {
+      return allVariables[room]['consecutivePasses'];
+    }
+    else{
+      return false;
+    }
+  };
+
+  return {
+    createRoom: createRoom,
+    getUserNames: getUserNames,
+    getUserChanceTracker: getUserChanceTracker,
+    getCardTracker: getCardTracker,
+    getTableTracker: getTableTracker,
+    getConsecutivePasses: getConsecutivePasses
+  };
+}());
+
+
 // export function for listening to the socket
 module.exports = function (io) {
   io.sockets.on('connection', function(socket) {
-    var name = userNames.getGuestName();
+    // var name = userNames.getGuestName();
     // console.log(socket.id);
     userNames.setSocketId(name, socket.id)
     // send the new user their name and a list of users
@@ -377,13 +473,76 @@ module.exports = function (io) {
       });
     }
 
+    socket.on('create:room', function (data) {
+      // console.log(data);
+      var room = roomTracker.createRoom();
+      var socketId = data.socketId;
+      console.log(room);
+      if (room){
+        socket.join(room);
+        var roomUserNames = roomTracker.getUserNames(room);
+        var name =roomUserNames.getGuestName();
+        var data = {room: room, name: name};
+        io.to(socketId).emit('create:room', data);
+      }
+      else{
+        var data = {error: "all room full :("};
+        io.to(socketId).emit('create:room', data);
+      }
+    });
+
+    socket.on('join:room', function(data) {
+      var socketId = data.socketId;
+      var room = data.room;
+      var roomUserNames = roomTracker.getUserNames(room);
+      if (!roomUserNames){
+        var data = {error: "no existing room :("};
+        io.to(socketId).emit('join:room', data);
+        return;
+      }
+      var name = roomUserNames.getGuestName();
+      if (!name){
+        var data = {error: "room full :("};
+        io.to(socketId).emit('join:room', data);
+        return;
+      }
+      socket.join(room);
+      var data = {room: room, name: name};
+      io.sockets.in(room).emit('join:room', data);
+    });
+
+    socket.on('submit:name', function(data) {
+      var socketId = data.socketId;
+      var room = data.room;
+      var newName = data.newName;
+      var oldName = data.oldName;
+      console.log(data);
+      var roomUserNames = roomTracker.getUserNames(room);
+      if (!roomUserNames){
+        var data = {error: "no existing room :("};
+        io.to(socketId).emit('submit:name', data);
+        return;
+      }
+      console.log(roomUserNames.get());
+      if (roomUserNames.claim(newName)) {
+        roomUserNames.free(oldName);
+        console.log(roomUserNames.get());
+        var data = {newName: newName};
+        io.to(socketId).emit('submit:name', data);
+      }
+      else{
+        var data = {error: "name already taken !"};
+        io.to(socketId).emit('submit:name', data);
+      }
+    });
+
+
     socket.on('submit:button', function (data) {
       var player = data.player;
       var playedCard = data.playedCard;
       var baseCard = data.baseCard;
       var winner = cardTracker.checkWinner(userNames.get());
       console.log("winner is ", winner);
-
       if (winner){
         var data = {winner: winner};
         io.emit('game:over', data);

@@ -356,7 +356,7 @@ var PlayerUI = React.createClass({
                 if (user != currUser) {
                     var userName = React.createElement(
                         'h3',
-                        null,
+                        { style: { color: "navajowhite" } },
                         user
                     );
                 }
@@ -787,11 +787,120 @@ var MessageBar = React.createClass({
     }
 });
 
+var IntroPageUI = React.createClass({
+    displayName: 'IntroPageUI',
+
+    getInitialState: function getInitialState() {
+        return { inputName: '', inputRoom: '', inputNameFlag: false, inputRoomFlag: true, name: '', room: '', pageInfo: '' };
+    },
+
+    handleSubmit: function handleSubmit(e) {
+
+        if (e.target.id == "createRoom") {
+            console.log("created room");
+            this.props.handleCreateRoom();
+        } else if (e.target.id == "joinRoom") {
+            console.log(this.state.room);
+            this.props.handleJoinRoom(this.state.inputRoom);
+        } else if (e.target.id == "submitName") {
+            var respName = this.props.handleSubmitName(this.state.inputName, this.state.name);
+        }
+    },
+
+    changeHandler: function changeHandler(e) {
+        if (e.target.id == "inputRoom") {
+            this.setState({ inputRoom: e.target.value });
+        }
+        if (e.target.id == "inputName") {
+            this.setState({ inputName: e.target.value });
+        }
+    },
+
+    setRespRoom: function setRespRoom(respRoom) {
+        console.log(respRoom);
+        var error = respRoom.error;
+        var room = respRoom.room;
+        var name = respRoom.name;
+
+        if (error) {
+            alert(error);
+        } else {
+            this.setState({ inputNameFlag: true, inputRoomFlag: false, room: room, name: name });
+            this.props.setRoom(room);
+        }
+    },
+
+    render: function render() {
+        if (this.state.inputNameFlag) {
+            var pageInfo = this.state.pageInfo;
+            var inputNameUI = React.createElement(
+                'div',
+                null,
+                React.createElement('input', {
+                    onChange: this.changeHandler,
+                    value: this.state.text,
+                    placeholder: 'enter name',
+                    maxLength: '10',
+                    className: 'inputName',
+                    id: 'inputName'
+                }),
+                React.createElement(
+                    'button',
+                    {
+                        onClick: this.handleSubmit,
+                        className: 'submitName',
+                        id: 'submitName'
+                    },
+                    'Submit'
+                )
+            );
+        }
+        if (this.state.inputRoomFlag) {
+            var inputRoomUI = React.createElement(
+                'div',
+                null,
+                React.createElement(
+                    'button',
+                    {
+                        onClick: this.handleSubmit,
+                        className: 'createRoom',
+                        id: 'createRoom'
+                    },
+                    'Create new room'
+                ),
+                React.createElement('input', {
+                    onChange: this.changeHandler,
+                    value: this.state.text,
+                    placeholder: 'enter room name',
+                    className: 'inputRoom',
+                    id: 'inputRoom'
+                }),
+                React.createElement(
+                    'button',
+                    {
+                        onClick: this.handleSubmit,
+                        className: 'joinRoom',
+                        id: 'joinRoom'
+                    },
+                    'Join room'
+                )
+            );
+        }
+        return React.createElement(
+            'div',
+            null,
+            inputNameUI,
+            inputRoomUI
+        );
+    }
+});
+
 var GameUI = React.createClass({
     displayName: 'GameUI',
 
     getInitialState: function getInitialState() {
-        return { users: [], displayCards: null, moveInfoHistory: [], baseCard: '1', messages: [], text: '', tableCardsCnt: "0", newTurn: 1 };
+        return { users: [], displayCards: null, moveInfoHistory: [], baseCard: '1', messages: [], text: '',
+            tableCardsCnt: "0", newTurn: 1, introPageFlag: true, gamePageFlag: false, endPageFlag: false };
     },
 
     componentDidMount: function componentDidMount() {
@@ -810,6 +919,9 @@ var GameUI = React.createClass({
         socket.on('display:move', this._displayMove);
         socket.on('clear:display', this._clearDisplay);
         socket.on('game:over', this._gameOver);
+        socket.on('create:room', this._createRoom);
+        socket.on('join:room', this._joinRoom);
+        socket.on('submit:name', this._submitName);
     },
 
     _initialize: function _initialize(data) {
@@ -1054,6 +1166,20 @@ var GameUI = React.createClass({
         alert(data['winner']);
     },
 
+    _createRoom: function _createRoom(data) {
+        console.log(data);
+        this.introPageRef.setRespRoom(data);
+    },
+
+    _joinRoom: function _joinRoom(data) {
+        console.log(data);
+        this.introPageRef.setRespRoom(data);
+    },
+
+    _submitName: function _submitName(data) {
+        console.log(data);
+    },
+
     getPosition: function getPosition(user, currPlayerIndex) {
         var startingIndex = this.state.users.indexOf(user);
         return (4 + currPlayerIndex - startingIndex) % 4;
@@ -1165,45 +1291,86 @@ var GameUI = React.createClass({
         return this.state.newTurn;
     },
 
+    handleCreateRoom: function handleCreateRoom() {
+        var data = { socketId: socket.id };
+        socket.emit('create:room', data);
+    },
+
+    handleJoinRoom: function handleJoinRoom(room) {
+        var data = { socketId: socket.id, room: room };
+        socket.emit('join:room', data);
+    },
+
+    handleSubmitName: function handleSubmitName(newName, oldName) {
+        var data = { socketId: socket.id, room: this.state.room, newName: newName, oldName: oldName };
+        socket.emit('submit:name', data);
+    },
+
+    setRoom: function setRoom(room) {
+        this.setState({ room: room });
+    },
+
     render: function render() {
         var _this6 = this;
 
         var animationUI = this.state.animationUI;
         var modalUI = this.state.modalUI;
         // console.log("main ", animationUI);
+        if (this.state.gamePageFlag) {
+            var gamePageUI = React.createElement(
+                'div',
+                null,
+                React.createElement(MessageBar, {
+                    user: this.state.user
+                }),
+                React.createElement(TableUI, { ref: function (instance) {
+                        _this6.child = instance;
+                    },
+                    tableCardsCnt: this.state.tableCardsCnt,
+                    baseCard: this.state.baseCard,
+                    newTurn: this.state.newTurn,
+                    users: this.state.users,
+                    user: this.state.user,
+                    userChance: this.state.userChance,
+                    displayCards: this.state.displayCards,
+                    setNewBaseCard: this.setNewBaseCard,
+                    setModalUI: this.setModalUI
+                }),
+                React.createElement(PlayerUI, {
+                    users: this.state.users,
+                    user: this.state.user,
+                    cards: this.state.cards,
+                    userChance: this.state.userChance,
+                    baseCard: this.state.baseCard,
+                    moveInfoHistory: this.state.moveInfoHistory,
+                    checkNewTurn: this.checkNewTurn,
+                    handleSubmitButton: this.handleSubmitButton,
+                    handleCheckButton: this.handleCheckButton,
+                    handlePassButton: this.handlePassButton
+                }),
+                modalUI,
+                animationUI
+            );
+        } else if (this.state.introPageFlag) {
+            var introPageUI = React.createElement(
+                'div',
+                null,
+                React.createElement(IntroPageUI, {
+                    ref: function (instance) {
+                        _this6.introPageRef = instance;
+                    },
+                    handleCreateRoom: this.handleCreateRoom,
+                    handleJoinRoom: this.handleJoinRoom,
+                    handleSubmitName: this.handleSubmitName,
+                    setRoom: this.setRoom
+                })
+            );
+        }
         return React.createElement(
             'div',
             null,
-            React.createElement(MessageBar, {
-                user: this.state.user
-            }),
-            React.createElement(TableUI, { ref: function (instance) {
-                    _this6.child = instance;
-                },
-                tableCardsCnt: this.state.tableCardsCnt,
-                baseCard: this.state.baseCard,
-                newTurn: this.state.newTurn,
-                users: this.state.users,
-                user: this.state.user,
-                userChance: this.state.userChance,
-                displayCards: this.state.displayCards,
-                setNewBaseCard: this.setNewBaseCard,
-                setModalUI: this.setModalUI
-            }),
-            React.createElement(PlayerUI, {
-                users: this.state.users,
-                user: this.state.user,
-                cards: this.state.cards,
-                userChance: this.state.userChance,
-                baseCard: this.state.baseCard,
-                moveInfoHistory: this.state.moveInfoHistory,
-                checkNewTurn: this.checkNewTurn,
-                handleSubmitButton: this.handleSubmitButton,
-                handleCheckButton: this.handleCheckButton,
-                handlePassButton: this.handlePassButton
-            }),
-            modalUI,
-            animationUI
+            introPageUI,
+            gamePageUI
         );
     }
 });
