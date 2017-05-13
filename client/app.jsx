@@ -117,7 +117,10 @@ var CardUI = React.createClass({
             var player = this.props.currUser;
             var playedCard = this.getSelectedCards();
             if (playedCard.length == 0){
-                alert("choose one card");
+                alert("select at least one card");
+            }
+            else if (!this.props.baseCard){
+                alert("choose base card");
             }
             else {
                 var data = {player: player, playedCard: playedCard};
@@ -213,7 +216,7 @@ var CardUI = React.createClass({
             var cardClass = "playerCards" + String(this.props.position);
             displayText = <div>
                 <img src="images/abc.png" className={cardClass}/>
-                <div className={cardCntClass}>{this.props.cards.length}</div>
+                <div className={cardCntClass}>{this.props.playerCardCnt[this.props.index]}</div>
             </div>
         }
         return(
@@ -249,7 +252,7 @@ var PlayerUI = React.createClass({
                     var userChance = this.props.userChance;
                     var userChanceBool = false;
                     var moveInfo = moveInfoHistory[i];
-                    console.log(i, moveInfo);
+                    // console.log(i, moveInfo);
                     var playerMoveInfo = null;
                     if (i == userChance){
                         userChanceBool = true;
@@ -282,19 +285,21 @@ var PlayerUI = React.createClass({
 
 
                     // console.log(userChanceBool);
-
+                    // console.log(user, currUser, currPlayerClass);
                     if (user != currUser) {
                         var userName =
                             <h3 style={{color: "navajowhite"}}>{user}</h3>;
                     }
                     var CardUIDiv =
                         <CardUI
+                            index={i}
                             user={user}
                             currUser={currUser}
                             cards={this.props.cards}
                             baseCard={this.props.baseCard}
                             userChanceBool={userChanceBool}
                             position={position}
+                            playerCardCnt={this.props.playerCardCnt}
                             checkNewTurn={this.props.checkNewTurn}
                             handleSubmitButton={this.props.handleSubmitButton}
                             handleCheckButton={this.props.handleCheckButton}
@@ -577,10 +582,10 @@ var MessageTab = React.createClass({
     },
 
     handleClick(e){
-        console.log("here");
+        // console.log("here");
         e.preventDefault();
         var tmpShowFlag = !(this.state.showFlag);
-        console.log(this.state.showFlag, tmpShowFlag);
+        // console.log(this.state.showFlag, tmpShowFlag);
         this.setState({showFlag: tmpShowFlag});
         this.props.setMessageBar(tmpShowFlag);
     },
@@ -617,8 +622,8 @@ var MessageBar = React.createClass({
 
     componentDidUpdate(){
         if (this.domMessageBar) {
-            console.log("here in refs");
-            console.log(this.domMessageBar.getDOMNode().scrollHeight, this.domMessageBar.getDOMNode().offsetTop);
+            // console.log("here in refs");
+            // console.log(this.domMessageBar.getDOMNode().scrollHeight, this.domMessageBar.getDOMNode().offsetTop);
             // this.scrollElement(this.domMessageBar);
             this.domMessageBar.getDOMNode().scrollTop = this.domMessageBar.getDOMNode().scrollHeight;
         }
@@ -626,27 +631,28 @@ var MessageBar = React.createClass({
 
     _messageRecieve(message) {
         var {messages} = this.state;
-        message['type'] = "reverse";
+        message['type'] = "reverse";            // for other users type is reverse
         messages.push(message);
         this.setState({messages});
     },
 
     onMessageSubmit(message){
         var {messages} = this.state;
-        socket.emit('send:message', message);
+        var data = {text: message.text, user: message.user, room: this.props.room};
+        socket.emit('send:message', data);
         message['type'] = "normal";
         messages.push(message);
         this.setState({messages});
     },
 
     setMessageBar(flag){
-        console.log(flag);
+        // console.log(flag);
         this.setState({showMessageBar: flag});
     },
 
     render(){
         if (this.state.showMessageBar) {
-            console.log("here in return");
+            // console.log("here in return");
             var messageBar =
                 <div className="messageBarUI"
                     >
@@ -678,21 +684,21 @@ var MessageBar = React.createClass({
 
 var IntroPageUI = React.createClass({
     getInitialState() {
-        return {inputName: '', inputRoom: '', inputNameFlag: false, inputRoomFlag: true, name: '', room: '', pageInfo: ''};
+        return {inputName: '', inputRoom: '', inputNameFlag: false, inputRoomFlag: true, name: '', room: '', pageInfo: '', waitPageFlag: false, roomInfo: []};
     },
 
     handleSubmit(e) {
 
         if (e.target.id == "createRoom"){
-           console.log("created room");
+           // console.log("created room");
            this.props.handleCreateRoom();
         }
         else if (e.target.id == "joinRoom"){
-           console.log(this.state.room);
+           // console.log(this.state.room);
            this.props.handleJoinRoom(this.state.inputRoom);
         }
         else if(e.target.id == "submitName"){
-            var respName = this.props.handleSubmitName(this.state.inputName, this.state.name);
+            this.props.handleSubmitName(this.state.inputName, this.state.name);
         }
     },
 
@@ -706,24 +712,49 @@ var IntroPageUI = React.createClass({
     },
 
     setRespRoom(respRoom){
-        console.log(respRoom);
+        // console.log(respRoom);
         var {error, room, name} = respRoom;
         if (error){
             alert(error);
         }
         else{
-            this.setState({inputNameFlag: true, inputRoomFlag: false, room: room, name: name});
+            var roomInfo = this.state.roomInfo;
+            var tmpInfo = <div>Room - {room}</div>;
+            roomInfo.push(tmpInfo);
+            for (var i = 0 ; i < this.props.users.length ; i++)
+                roomInfo.push(users[i]);
+            this.setState({inputNameFlag: true, waitPageFlag:true, inputRoomFlag: false, room: room, name: name, roomInfo: roomInfo});
             this.props.setRoom(room);
         }
     },
 
+    setRespName(respName){
+        // console.log(respName);
+        var {error, newName} = respName;
+        if (error){
+            alert(error);
+            this.clearInputValue();
+        }
+        if (newName){
+            this.setState({name: newName});
+            this.waitScreen();
+        }
+    },
+
+    clearInputValue(){
+        this.setState({inputName: ''})
+    },
+    
+    waitScreen(){
+        this.setState({inputNameFlag: false, waitPageFlag: true});
+    },
+    
     render(){
         if (this.state.inputNameFlag) {
-            var pageInfo = this.state.pageInfo;
             var inputNameUI = <div>
                 <input
                     onChange={this.changeHandler}
-                    value={this.state.text}
+                    value={this.state.inputName}
                     placeholder="enter name"
                     maxLength="10"
                     className="inputName"
@@ -736,6 +767,13 @@ var IntroPageUI = React.createClass({
                 >
                     Submit
                 </button>
+            </div>;
+        }
+        else{
+            var inputNameUI =
+            <div
+                className="nameIntro">
+                {this.state.name}
             </div>;
         }
         if (this.state.inputRoomFlag){
@@ -763,10 +801,26 @@ var IntroPageUI = React.createClass({
                 </button>
             </div>
         }
+        if (this.state.waitPageFlag){
+            var waitPageUI = <div>
+                <div
+                    className="roomNameIntro">{
+                        this.state.roomInfo.map((info) => {
+                            return(
+                                <div>
+                                    {info}
+                                </div>
+                            );
+                        })
+                    }
+                </div>
+            </div>
+        }
         return (
             <div>
                 {inputNameUI}
                 {inputRoomUI}
+                {waitPageUI}
             </div>
         )
     }
@@ -776,12 +830,13 @@ var IntroPageUI = React.createClass({
 var GameUI = React.createClass({
     getInitialState(){
         return {users: [], displayCards: null, moveInfoHistory: [], baseCard: '1', messages:[], text: '',
-            tableCardsCnt: "0", newTurn: 1, introPageFlag: true, gamePageFlag: false, endPageFlag: false}
+            tableCardsCnt: "0", newTurn: 1, introPageFlag: true, gamePageFlag: false, endPageFlag: false,
+            cards: [], playerCardCnt: []}
     },
 
     componentDidMount() {
         socket.on('init', this._initialize);
-        socket.on('send:message', this._messageRecieve);
+        // socket.on('send:message', this._messageRecieve);
         socket.on('user:join', this._userJoined);
         socket.on('user:left', this._userLeft);
         socket.on('change:name', this._userChangedName);
@@ -801,9 +856,9 @@ var GameUI = React.createClass({
     },
 
     _initialize(data) {
-        console.log(data);
-        var {users, name, cards} = data;
-        this.setState({users:users, user: name, cards:cards});
+        // console.log(data);
+        var {users, cards} = data;
+        this.setState({users:users, cards:cards});
         var rankList = [];
         for (var i = 1 ; i < 14 ; i++){
             var rankInfo = {};
@@ -840,14 +895,14 @@ var GameUI = React.createClass({
     },
 
     _userJoined(data) {
-        var {users, messages} = this.state;
-        var {name} = data;
-        users.push(name);
-        messages.push({
-            user: 'APPLICATION BOT',
-            text : name +' Joined'
-        });
-        this.setState({users, messages});
+        var {newUsers} = data;
+        // users.push(name);
+        // messages.push({
+        //     user: 'APPLICATION BOT',
+        //     text : name +' Joined'
+        // });
+        // console.log("here in user joined ", newUsers);
+        this.setState({users: newUsers});
     },
 
     _userLeft(data) {
@@ -875,19 +930,19 @@ var GameUI = React.createClass({
     },
 
     _gameStart(data) {
-        // console.log("userchance");
-        // console.log(data);
-        // console.log("--");
+        // // console.log("userchance");
+        // // console.log(data);
+        // // console.log("--");
         var {userChance} = data;
         this.setState({userChance: userChance});
     },
 
     _submitButton(data) {
         var {name, cards, error} = data;
-        // console.log('in _submit button');
-        // console.log(data);
+        // // console.log('in _submit button');
+        // // console.log(data);
         if (error){
-            console.log("unsuccessfull");
+            // console.log("unsuccessfull");
         }
         else {
             this.setState({cards: cards});
@@ -907,28 +962,28 @@ var GameUI = React.createClass({
     },
 
     clearUI(){
-        console.log("here in clearUI");
+        // console.log("here in clearUI");
         this.setState({animationUI: {}});
     },
 
     _updateTable(data){
         console.log("in _updateTable");
-        // console.log(data);
-        var {tableCardsCnt, newTurn, displayAnimation} = data;
-        console.log(displayAnimation);
+        // // // console.log(data);
+        var {tableCardsCnt, newTurn, displayAnimation, playerCardCnt} = data;
+        // console.log(displayAnimation);
         if (displayAnimation){
             var {player, cardCnt, move} = displayAnimation;
-            console.log(player, cardCnt, move);
+            // console.log(player, cardCnt, move);
             if (move == "add"){
                 var currPlayerIndex = this.state.users.indexOf(player);
                 var pos = this.getPosition(this.state.user, currPlayerIndex);
                 var imgPath = "images/abc.png";
                 var playerClass = "animateAddingCard" + String(pos);
-                console.log(playerClass);
+                // console.log(playerClass);
                 var animationUI = <div className={playerClass}>
                     <img src={imgPath} className="displayDefaultImage"/>
                 </div>;
-                console.log(animationUI);
+                // console.log(animationUI);
                 this.setState({animationUI: animationUI});
             }
             if (move == "del"){
@@ -936,11 +991,11 @@ var GameUI = React.createClass({
                 var pos = this.getPosition(this.state.user, currPlayerIndex);
                 var imgPath = "images/abc.png";
                 var playerClass = "animateDelCard" + String(pos);
-                console.log(playerClass);
+                // console.log(playerClass);
                 var animationUI = <div className={playerClass}>
                     <img src={imgPath} className="displayDefaultImage"/>
                 </div>;
-                console.log(animationUI);
+                // console.log(animationUI);
                 this.setState({animationUI: animationUI});
             }
             setTimeout(this.clearUI, 900);
@@ -948,6 +1003,12 @@ var GameUI = React.createClass({
 
         if (newTurn == 1){
             this.setState({moveInfoHistory: [], baseCard: ''});
+        }
+
+        if (playerCardCnt){
+            console.log("playerCard Cnt ");
+            console.log(cardCnt);
+            this.setState({playerCardCnt: playerCardCnt});
         }
         this.setState({tableCardsCnt: tableCardsCnt, newTurn: newTurn});
     },
@@ -970,7 +1031,7 @@ var GameUI = React.createClass({
         tmpMoveInfoHistory.push({});
         // console.log(data);
         var {moveInfoList, topCards} = data;
-        console.log(topCards);
+        // console.log(topCards);
         for (var i = 0 ; i < moveInfoList.length ; i++){
             var moveInfo = moveInfoList[i];
             // console.log("***********");
@@ -986,13 +1047,13 @@ var GameUI = React.createClass({
             else{
                 display = 'check';
             }
-            console.log(this.state.users.indexOf(player), display);
-            console.log("***********");
+            // console.log(this.state.users.indexOf(player), display);
+            // console.log("***********");
             tmpMoveInfoHistory[this.state.users.indexOf(player)] = {display: display, move: moveType};
         }
-        console.log('in display move');
-        console.log(tmpMoveInfoHistory);
-        console.log("------");
+        // console.log('in display move');
+        // console.log(tmpMoveInfoHistory);
+        // console.log("------");
         this.setState({moveInfoHistory: tmpMoveInfoHistory});
         if (topCards) {
             this.setState({displayCards: topCards});
@@ -1001,22 +1062,31 @@ var GameUI = React.createClass({
     },
 
     _gameOver(data){
-        console.log(data);
+        // console.log(data);
         alert(data['winner']);
+        this.setGameOverPage();
     },
 
     _createRoom(data){
-        console.log(data);
+        // console.log(data);
         this.introPageRef.setRespRoom(data);
     },
 
     _joinRoom(data){
-        console.log(data);
+        // console.log(data);
         this.introPageRef.setRespRoom(data);
     },
 
     _submitName(data){
-        console.log(data);
+        // console.log(data);
+        var {error, newName} = data;
+        if (error){
+            alert(error);
+        }
+        if (newName){
+            this.setState({user: newName, gamePageFlag: true, introPageFlag: false});
+        }
+        // this.introPageRef.setRespName(data);
     },
 
     getPosition(user, currPlayerIndex){
@@ -1030,24 +1100,27 @@ var GameUI = React.createClass({
 
     handleSubmitButton(data){
         var tmpData = {};
-        // console.log("-----");
+        // // console.log("-----");
         // console.log(socket.id);
         // console.log("-----");
         var {player, playedCard} = data;
         tmpData['player'] = player;
         tmpData['playedCard'] = playedCard;
         tmpData['baseCard'] = this.state.baseCard;
+        tmpData['room'] = this.state.room;
         socket.emit('submit:button', tmpData);
         // console.log('in handle submit button');
         // console.log(data);
     },
 
     handlePassButton(data){
+        data['room'] = this.state.room;
         socket.emit('pass:button', data);
     },
 
     handleCheckButton(data){
         var {player} = data;
+        data['room'] = this.state.room;
         socket.emit('check:button', data);
 
         // console.log("in handle check button");
@@ -1093,7 +1166,7 @@ var GameUI = React.createClass({
     },
 
     setModalUI(data){
-        console.log(data);
+        // console.log(data);
         if (data == "show"){
             var rankListUI = <div className="myModal">
                     <div className="rankList">{this.renderListItems()}</div></div>;
@@ -1136,6 +1209,10 @@ var GameUI = React.createClass({
         this.setState({room: room});
     },
 
+    setGameOverPage(){
+        
+    },
+
     render() {
         var animationUI = this.state.animationUI;
         var modalUI = this.state.modalUI;
@@ -1144,6 +1221,7 @@ var GameUI = React.createClass({
             var gamePageUI = <div>
                 <MessageBar
                     user={this.state.user}
+                    room={this.state.room}
                 />
                 <TableUI ref={instance => { this.child = instance; }}
                          tableCardsCnt={this.state.tableCardsCnt}
@@ -1163,6 +1241,7 @@ var GameUI = React.createClass({
                     userChance={this.state.userChance}
                     baseCard={this.state.baseCard}
                     moveInfoHistory={this.state.moveInfoHistory}
+                    playerCardCnt={this.state.playerCardCnt}
                     checkNewTurn={this.checkNewTurn}
                     handleSubmitButton={this.handleSubmitButton}
                     handleCheckButton={this.handleCheckButton}
@@ -1177,6 +1256,7 @@ var GameUI = React.createClass({
             var introPageUI = <div>
                 <IntroPageUI
                     ref={instance => { this.introPageRef = instance; }}
+                    users= {this.state.users}
                     handleCreateRoom = {this.handleCreateRoom}
                     handleJoinRoom = {this.handleJoinRoom}
                     handleSubmitName = {this.handleSubmitName}
@@ -1185,6 +1265,7 @@ var GameUI = React.createClass({
 
             </div>
         }
+
         return(
             <div>
                 {introPageUI}

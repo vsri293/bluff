@@ -1,13 +1,15 @@
 // Keep track of which names are used so that there are no duplicates
-var userNames = (function () {
+function userNames() {
   var names = {};
   var socketInfo = {};
+  var nameList = [];
 
   var claim = function (name) {
     if (!name || names[name]) {
       return false;
     } else {
       names[name] = true;
+      nameList.push(name);
       return true;
     }
   };
@@ -23,19 +25,19 @@ var userNames = (function () {
     do {
       name = 'Guest ' + nextUserId;
       nextUserId += 1;
-    } while (!claim(name));
+    } while (names[name]);
 
     return name;
   };
 
   // serialize claimed names as an array
   var get = function () {
-    var res = [];
-    for (user in names) {
-      res.push(user);
-    }
+    // var res = [];
+    // for (user in names) {
+    //   res.push(user);
+    // }
 
-    return res;
+    return nameList;
   };
 
   var free = function (name) {
@@ -66,9 +68,9 @@ var userNames = (function () {
     setSocketId: setSocketId,
     getSocketId: getSocketId
   };
-}());
+}
 
-var userChanceTracker = (function() {
+function userChanceTracker () {
   var userChance = 0;
 
   var initChance = function () {
@@ -94,9 +96,9 @@ var userChanceTracker = (function() {
     getCurrentChance: getCurrentChance,
     setCurrentChance: setCurrentChance
   };
-}());
+}
 
-var cardTracker = (function () {
+function cardTracker() {
   var playerCards = {};
   var deckCards = [];
   for (var i = 1 ; i <= 4 ; i++){
@@ -113,14 +115,14 @@ var cardTracker = (function () {
       tmpCards.push(2);
       playerCards[players[i]] = tmpCards;
     }
-    console.log(playerCards);
+    // console.log(playerCards);
     return true;
   };
 
   // update card for the player
   var cardUpdate = function(player, cards, action){
-    console.log(player);
-    console.log(playerCards);
+    // console.log(player);
+    // console.log(playerCards);
     var tmpCards = playerCards[player];
     var size = cards.length;
     var i;
@@ -147,7 +149,7 @@ var cardTracker = (function () {
       sortCards(player);
     }
 
-    console.log(playerCards);
+    // console.log(playerCards);
     return true;
   };
 
@@ -177,7 +179,7 @@ var cardTracker = (function () {
       return (a%100 - b%100);
     });
     playerCards[name] = sortedCards;
-    console.log(sortedCards);
+    // console.log(sortedCards);
     return sortedCards;
   };
 
@@ -191,6 +193,15 @@ var cardTracker = (function () {
     return null;
   };
 
+  var getCardCnt = function(users){
+    var cardCntList = [];
+    for (var i = 0 ; i < users.length ; i++){
+      var cardCnt = playerCards[users[i]].length;
+      cardCntList.push(cardCnt)
+    }
+    return cardCntList;
+  };
+
   return {
     cardDealer: cardDealer,
     cardUpdate: cardUpdate,
@@ -198,16 +209,18 @@ var cardTracker = (function () {
     getCards: getCards,
     initCards: initCards,
     sortCards: sortCards,
-    checkWinner: checkWinner
+    checkWinner: checkWinner,
+    getCardCnt: getCardCnt
   };
-}());
+}
 
-var tableTracker = (function(){
+function tableTracker(){
 
   var tableHistory = [];
   var tableCardsCnt = 0;
   var newTurn = 1;
   var moveInfo = [];
+  var consecutivePasses = 0;
 
   var addCards = function(player, cards, baseCard){
     var submitMoveInfo = {};
@@ -216,8 +229,8 @@ var tableTracker = (function(){
     submitMoveInfo['baseCard'] = baseCard;
     tableHistory.push(submitMoveInfo);
     tableCardsCnt += cards.length;
-    console.log(tableHistory);
-    console.log(tableCardsCnt);
+    // console.log(tableHistory);
+    // console.log(tableCardsCnt);
     return true;
   };
 
@@ -275,7 +288,7 @@ var tableTracker = (function(){
   var cleanTable = function() {
     tableHistory = [];
     tableCardsCnt = 0;
-      newTurn = 1;
+    newTurn = 1;
     moveInfo = [];
   };
 
@@ -317,6 +330,14 @@ var tableTracker = (function(){
     return moveInfo;
   };
 
+  var setConsPass = function(passValue){
+    consecutivePasses = passValue;
+  };
+
+  var getConsPass = function () {
+    return consecutivePasses;
+  };
+
   var sleep = function(milliseconds) {
     var start = new Date().getTime();
     for (var i = 0 ; i<100; i) {
@@ -332,15 +353,15 @@ var tableTracker = (function(){
     collectAllCards: collectAllCards,
     cleanTable: cleanTable,
     getTableCardsCnt: getTableCardsCnt,
-      getNewTurn: getNewTurn,
-      setNewTurn: setNewTurn,
+    getNewTurn: getNewTurn,
+    setNewTurn: setNewTurn,
     addNewMove: addNewMove,
     getMoveInfo: getMoveInfo,
+    setConsPass: setConsPass,
+    getConsPass: getConsPass,
     sleep: sleep
   };
-}());
-
-var consecutivePasses = 0;
+}
 
 var roomTracker = (function(){
 
@@ -353,13 +374,12 @@ var roomTracker = (function(){
       var newRoom = freeRooms[0];
       freeRooms.splice(0, 1);
       busyRooms.push(newRoom);
-      console.log(freeRooms, busyRooms);
+      // console.log(freeRooms, busyRooms);
       var tmpVariablesDict = {};
-      tmpVariablesDict['userNames'] = userNames;
-      tmpVariablesDict['userChanceTracker'] = userChanceTracker;
-      tmpVariablesDict['cardTracker'] = cardTracker;
-      tmpVariablesDict['tableTracker'] = tableTracker;
-      tmpVariablesDict['consecutivePasses'] = consecutivePasses;
+      tmpVariablesDict['userNames'] = new userNames();
+      tmpVariablesDict['userChanceTracker'] = new userChanceTracker();
+      tmpVariablesDict['cardTracker'] = new cardTracker();
+      tmpVariablesDict['tableTracker'] = new tableTracker();
       allVariables[newRoom] = tmpVariablesDict;
       return newRoom;
     }
@@ -380,6 +400,7 @@ var roomTracker = (function(){
 
   var getUserNames = function (room) {
     if (checkExistRoom(room)) {
+
       return allVariables[room]['userNames'];
     }
     else{
@@ -437,47 +458,47 @@ var roomTracker = (function(){
 // export function for listening to the socket
 module.exports = function (io) {
   io.sockets.on('connection', function(socket) {
-    // var name = userNames.getGuestName();
+    // var name = "Guest";
     // console.log(socket.id);
-    userNames.setSocketId(name, socket.id)
+    // userNames.setSocketId(name, socket.id)
     // send the new user their name and a list of users
-    socket.emit('init', {
-      name: name,
-      users: userNames.get(),
-      cards: []
-    });
+    // socket.emit('init', {
+    //   name: name,
+    //   users: userNames.get(),
+    //   cards: []
+    // });
 
     // notify other clients that a new user has joined
-    socket.broadcast.emit('user:join', {
-      name: name
-    });
-    var users = userNames.get();
-    if (users.length == 4) {
-      // console.log('usernames' + users);
-      userChanceTracker.initChance();
-        for (var i = 0 ; i < 4 ; i++){
-            var name = users[i];
-            console.log(name);
-            var cards = cardTracker.initCards(name);
-            console.log(name, cards);
-          console.log("0-------");
-            io.to(userNames.getSocketId(name)).emit('cards:update',{
-                cards: cards
-            });
-        }
-        tableTracker.cleanTable();
-        var data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn()};
-        io.emit('update:table', data);
-      io.emit('game:start', {
-        userChance: userChanceTracker.getCurrentChance()
-      });
-    }
+    // socket.broadcast.emit('user:join', {
+    //   name: name
+    // });
+    // var users = userNames.get();
+    // if (users.length == 4) {
+    //   // console.log('usernames' + users);
+    //   userChanceTracker.initChance();
+    //     for (var i = 0 ; i < 4 ; i++){
+    //         var name = users[i];
+    //         console.log(name);
+    //         var cards = cardTracker.initCards(name);
+    //         console.log(name, cards);
+    //       console.log("0-------");
+    //         io.to(userNames.getSocketId(name)).emit('cards:update',{
+    //             cards: cards
+    //         });
+    //     }
+    //     tableTracker.cleanTable();
+    //     var data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn()};
+    //     io.emit('update:table', data);
+    //   io.emit('game:start', {
+    //     userChance: userChanceTracker.getCurrentChance()
+    //   });
+    // }
 
     socket.on('create:room', function (data) {
       // console.log(data);
       var room = roomTracker.createRoom();
       var socketId = data.socketId;
-      console.log(room);
+      // console.log(room);
       if (room){
         socket.join(room);
         var roomUserNames = roomTracker.getUserNames(room);
@@ -508,7 +529,7 @@ module.exports = function (io) {
       }
       socket.join(room);
       var data = {room: room, name: name};
-      io.sockets.in(room).emit('join:room', data);
+      io.to(socketId).emit('join:room', data);
     });
 
     socket.on('submit:name', function(data) {
@@ -516,23 +537,51 @@ module.exports = function (io) {
       var room = data.room;
       var newName = data.newName;
       var oldName = data.oldName;
-      console.log(data);
+      // console.log(data);
       var roomUserNames = roomTracker.getUserNames(room);
+      var roomUserChanceTracker = roomTracker.getUserChanceTracker(room);
+      var roomCardTracker = roomTracker.getCardTracker(room);
+      var roomTableTracker = roomTracker.getTableTracker(room);
       if (!roomUserNames){
         var data = {error: "no existing room :("};
         io.to(socketId).emit('submit:name', data);
         return;
       }
-      console.log(roomUserNames.get());
+      // console.log(roomUserNames.get());
       if (roomUserNames.claim(newName)) {
         roomUserNames.free(oldName);
-        console.log(roomUserNames.get());
+        // console.log(roomUserNames.get());
         var data = {newName: newName};
+        roomUserNames.setSocketId(newName, socketId);
         io.to(socketId).emit('submit:name', data);
+        io.sockets.in(room).emit('user:join', {newUsers: roomUserNames.get()});
       }
       else{
         var data = {error: "name already taken !"};
         io.to(socketId).emit('submit:name', data);
+        return;
+      }
+      // console.log("after name taken error");
+      var users = roomUserNames.get();
+      if (users.length == 4){
+        roomUserChanceTracker.initChance();
+        roomTableTracker.cleanTable();
+        io.sockets.in(room).emit('game:start', {
+          userChance: roomUserChanceTracker.getCurrentChance()
+        });
+        // console.log("card dealing ");
+        for (var i = 0 ; i < 4 ; i++){
+          var name = users[i];
+          var cards = roomCardTracker.initCards(name);
+          // console.log(name, cards);
+          // console.log("0-------");
+          io.to(roomUserNames.getSocketId(name)).emit('init',{
+              cards: cards,
+              users: users
+          });
+        }
+        var data = {tableCardsCnt: roomTableTracker.getTableCardsCnt(), newTurn: roomTableTracker.getNewTurn(), playerCardCnt: roomCardTracker.getCardCnt(users)};
+        io.sockets.in(room).emit('update:table', data);
       }
     });
 
@@ -541,41 +590,51 @@ module.exports = function (io) {
       var player = data.player;
       var playedCard = data.playedCard;
       var baseCard = data.baseCard;
-      var winner = cardTracker.checkWinner(userNames.get());
-      console.log("winner is ", winner);
+      var room = data.room;
+
+      var roomCardTracker = roomTracker.getCardTracker(room);
+      var roomTableTracker = roomTracker.getTableTracker(room);
+      var roomUserChanceTracker = roomTracker.getUserChanceTracker(room);
+      var roomUserNames = roomTracker.getUserNames(room);
+
+      var winner = roomCardTracker.checkWinner(roomUserNames.get());
+
+      // console.log("winner is ", winner);
       if (winner){
         var data = {winner: winner};
-        io.emit('game:over', data);
+        io.sockets.in(room).emit('game:over', data);
       }
-      var x = cardTracker.cardUpdate(player, playedCard, "delete");
-      tableTracker.addNewMove(player, playedCard, baseCard, 'submit');
-      io.emit('display:move', {moveInfoList: tableTracker.getMoveInfo()});
+      var x = roomCardTracker.cardUpdate(player, playedCard, "delete");
+      roomTableTracker.addNewMove(player, playedCard, baseCard, 'submit');
+      io.sockets.in(room).emit('display:move', {moveInfoList: roomTableTracker.getMoveInfo()});
       if (x) {
-        consecutivePasses = 0;
-        userChanceTracker.nextChance();
-        tableTracker.addCards(player, playedCard, baseCard);
-          io.to(userNames.getSocketId(player)).emit('cards:update',{
-              cards: cardTracker.getCards(player)
+        roomTableTracker.setConsPass(0);
+        roomUserChanceTracker.nextChance();
+        roomTableTracker.addCards(player, playedCard, baseCard);
+          io.to(roomUserNames.getSocketId(player)).emit('cards:update',{
+              cards: roomCardTracker.getCards(player)
           });
         
-        io.emit('chance:change', {
-          userChance: userChanceTracker.getCurrentChance()
+        io.sockets.in(room).emit('chance:change', {
+          userChance: roomUserChanceTracker.getCurrentChance()
         });
-          if(tableTracker.getNewTurn() == 1){
-              io.emit('setBase:card', {
-                 baseCard:baseCard
-              });
-          }
-        tableTracker.setNewTurn(0);
+        if(roomTableTracker.getNewTurn() == 1){
+          io.sockets.in(room).emit('setBase:card', {
+             baseCard:baseCard
+          });
+        }
+        roomTableTracker.setNewTurn(0);
         var displayAnimation = {player: player, cardCnt: playedCard.length, move: 'add'};
-        var data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn(), displayAnimation: displayAnimation};
-          io.emit('update:table', data);
-          data = {playerName: player, cardCount: playedCard.length, baseCard: baseCard};
-          io.emit('last:submit', data);
+        var users = roomUserNames.get();
+        var data = {tableCardsCnt: roomTableTracker.getTableCardsCnt(), newTurn: roomTableTracker.getNewTurn(), displayAnimation: displayAnimation, playerCardCnt: roomCardTracker.getCardCnt(users)};
+        console.log(data);
+        io.sockets.in(room).emit('update:table', data);
+        data = {playerName: player, cardCount: playedCard.length, baseCard: baseCard};
+        io.sockets.in(room).emit('last:submit', data);
 
       }
       else {
-        socket.emit('submit:button', {
+        io.sockets.in(room).emit('submit:button', {
           error: "not successful"
         });
       }
@@ -583,37 +642,44 @@ module.exports = function (io) {
 
     socket.on('check:button', function (data) {
       var checkingPlayer = data.player;
-      var checkInfo = tableTracker.checkCards(checkingPlayer);
-      tableTracker.addNewMove(checkingPlayer, [], '', 'check');
-      console.log(tableTracker.getMoveInfo());
-      io.emit('display:move', {moveInfoList: tableTracker.getMoveInfo(), topCards: checkInfo['topCards']});
-      console.log("0-----0");
-      console.log(checkInfo);
-      // tableTracker.sleep(3000);
+      var room = data.room;
+
+      var roomCardTracker = roomTracker.getCardTracker(room);
+      var roomTableTracker = roomTracker.getTableTracker(room);
+      var roomUserChanceTracker = roomTracker.getUserChanceTracker(room);
+      var roomUserNames = roomTracker.getUserNames(room);
+
+      var checkInfo = roomTableTracker.checkCards(checkingPlayer);
+      roomTableTracker.addNewMove(checkingPlayer, [], '', 'check');
+      // console.log(roomTableTracker.getMoveInfo());
+      io.sockets.in(room).emit('display:move', {moveInfoList: roomTableTracker.getMoveInfo(), topCards: checkInfo['topCards']});
+      // console.log("0-----0");
+      // console.log(checkInfo);
+      // roomTableTracker.sleep(3000);
 
       // io.emit('clear:display', {});
       if (checkInfo) {
-        consecutivePasses = 0;
+        roomTableTracker.setConsPass(0);
         var claim, winningPlayer, losingPlayer, allCards;
-        var users = userNames.get();
+        var users = roomUserNames.get();
         claim = checkInfo['claim'];
         winningPlayer = checkInfo['winningPlayer'];
         losingPlayer = checkInfo['losingPlayer'];
         allCards = checkInfo['allCards'];
-        cardTracker.cardUpdate(losingPlayer, allCards, "add");
+        roomCardTracker.cardUpdate(losingPlayer, allCards, "add");
         var updatedChance = users.indexOf(winningPlayer);
         if (updatedChance > -1) {
-          userChanceTracker.setCurrentChance(updatedChance);
-          io.emit('chance:change', {
-            userChance: userChanceTracker.getCurrentChance()
+          roomUserChanceTracker.setCurrentChance(updatedChance);
+          io.sockets.in(room).emit('chance:change', {
+            userChance: roomUserChanceTracker.getCurrentChance()
           });
         }
-        tableTracker.cleanTable();
+        roomTableTracker.cleanTable();
         var displayAnimation = {player: losingPlayer, cardCnt: allCards.length, move: 'del'};
-        data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn(), displayAnimation: displayAnimation};
-        io.emit('update:table', data);
-        io.to(userNames.getSocketId(losingPlayer)).emit('cards:update',{
-          cards: cardTracker.getCards(losingPlayer),
+        data = {tableCardsCnt: roomTableTracker.getTableCardsCnt(), newTurn: roomTableTracker.getNewTurn(), displayAnimation: displayAnimation, playerCardCnt: roomCardTracker.getCardCnt(users)};
+        io.sockets.in(room).emit('update:table', data);
+        io.to(roomUserNames.getSocketId(losingPlayer)).emit('cards:update',{
+          cards: roomCardTracker.getCards(losingPlayer),
           type: "add"
         });
       }
@@ -622,54 +688,68 @@ module.exports = function (io) {
 
     socket.on('pass:button', function(data) {
       var player = data.player;
-      userChanceTracker.nextChance();
-      tableTracker.addNewMove(player, [], '', 'pass');
-      io.emit('display:move', {moveInfoList:tableTracker.getMoveInfo()});
-      consecutivePasses = consecutivePasses + 1;
-      if (consecutivePasses == 4){
-        consecutivePasses = 0;
-        tableTracker.cleanTable();
-        data = {tableCardsCnt: tableTracker.getTableCardsCnt(), newTurn: tableTracker.getNewTurn()};
-        io.emit('update:table', data);
+      var room = data.room;
+
+      var roomCardTracker = roomTracker.getCardTracker(room);
+      var roomTableTracker = roomTracker.getTableTracker(room);
+      var roomUserChanceTracker = roomTracker.getUserChanceTracker(room);
+      var roomUserNames = roomTracker.getUserNames(room);
+
+      if (roomTableTracker.getConsPass() == 3)
+      {
+        roomTableTracker.setConsPass(0);
+        roomTableTracker.cleanTable();
+        data = {tableCardsCnt: roomTableTracker.getTableCardsCnt(), newTurn: roomTableTracker.getNewTurn()};
+        io.sockets.in(room).emit('update:table', data);
       }
-      io.emit('chance:change', {
-        userChance: userChanceTracker.getCurrentChance()
+      else {
+        roomUserChanceTracker.nextChance();
+        roomTableTracker.addNewMove(player, [], '', 'pass');
+        io.sockets.in(room).emit('display:move', {moveInfoList:roomTableTracker.getMoveInfo()});
+        roomTableTracker.setConsPass(roomTableTracker.getConsPass() + 1);
+      }
+
+      io.sockets.in(room).emit('chance:change', {
+        userChance: roomUserChanceTracker.getCurrentChance()
       });
     });
 
     // broadcast a user's message to other users
     socket.on('send:message', function (data) {
-      socket.broadcast.emit('send:message', {
+      var room = data.room;
+      var name = data.user;
+      // console.log(room);
+      socket.broadcast.to(room).emit('send:message', {
         user: name,
         text: data.text
       });
     });
 
-    // validate a user's name change, and broadcast it on success
-    socket.on('change:name', function (data, fn) {
-      if (userNames.claim(data.name)) {
-        var oldName = name;
-        userNames.free(oldName);
-
-        name = data.name;
-
-        socket.broadcast.emit('change:name', {
-          oldName: oldName,
-          newName: name
-        });
-
-        fn(true);
-      } else {
-        fn(false);
-      }
-    });
+    // // validate a user's name change, and broadcast it on success
+    // socket.on('change:name', function (data, fn) {
+    //   if (roomUserNames.claim(data.name)) {
+    //     var oldName = name;
+    //     userNames.free(oldName);
+    //
+    //     name = data.name;
+    //
+    //     socket.broadcast.emit('change:name', {
+    //       oldName: oldName,
+    //       newName: name
+    //     });
+    //
+    //     fn(true);
+    //   } else {
+    //     fn(false);
+    //   }
+    // });
 
     // clean up when a user leaves, and broadcast it to other users
     socket.on('disconnect', function () {
-      socket.broadcast.emit('user:left', {
-        name: name
-      });
-      userNames.free(name);
+      // socket.broadcast.emit('user:left', {
+      //   name: name
+      // });
+      // userNames.free(name);
     });
   });
 };
