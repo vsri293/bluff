@@ -1,0 +1,776 @@
+.users{
+	float : right;
+	margin-right: 1.5em;
+	right:10%;
+}
+.messages {
+    width: 190px;
+    margin: 1px;
+    /* border: 1px solid black; */
+    /* padding: 1em; */
+    overflow-y: auto;
+    height: 200px;
+    position: relative;
+    /* bottom: 2px; */
+    font-family: 'Raleway', sans-serif;
+    /*font-family: 'Cinzel', serif;;*/
+}
+.message_form{
+    position: absolute;
+    bottom: 1px;
+    border-top: 1.49px solid #31708f;
+}
+.message{
+    border-radius: 10px;
+    display: flex;
+    margin: 2px;
+    float: left;
+    flex-wrap: wrap;
+    word-break: break-all;
+    width: inherit;
+}
+.colorMessage{
+    background-color: antiquewhite;
+    /* padding-left: 5px; */
+    /* padding-right: 5px; */
+    padding: 5px;
+    border-radius: inherit;
+    font-size: 13px;
+}
+.change_name_form{
+	padding: 1em;
+}
+.player0{
+	position: fixed;
+	bottom: 20%;
+	left:20%;
+    right:20%;
+    top: 60%;
+	color: #b4b472;
+	text-align: center;
+    /*font-family: fantasy;*/
+    font-size: medium;
+}
+.player1{
+	position: fixed;
+	bottom: 50%;
+	right:2%;
+	color: red;
+	text-align: center;
+    /*font-family: fantasy;*/
+    font-size: medium;
+}
+.player2{
+	position: fixed;
+	top: 2%;
+    left:20%;
+    right:20%;
+	color: blue;
+	text-align: center;
+    /*font-family: fantasy;*/
+    font-size: medium;
+}
+.player3{
+	position: fixed;
+	bottom: 50%;
+	left: 2%;
+	color: green;
+	text-align: center;
+    /*font-family: fantasy;*/
+    font-size: medium;
+}
+.displayDefaultCard{
+	/*color: black;*/
+	/*background-color: black;*/
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: -25px;;
+    margin-top: 30px;
+}
+.displaySelectedCard{
+	/*color: whitesmoke;*/
+    background-color: white;
+	max-width:200px;
+    width: 80px;
+    height: 90px;
+    padding:0px;
+    border:0px;
+    margin-right: -25px;
+    margin-top: 10px;
+}
+.tableUI{
+    position: fixed;
+    top: 15%;
+    left: 10%;
+    right: 10%;
+    bottom: 30%;
+    color: green;
+    text-align: center;
+    /*font-family: fantasy;*/
+    font-size: medium;
+    border: 20px solid #3a9fd2;
+    border-radius: 150px;
+    /* background-image: url(../images/abc.png); */
+    background-color: rgb(65, 136, 187);
+    font-family: 'Cinzel', serif;
+}
+.playerCardsCnt0
+{
+	color:coral;
+    font-family: fantasy;
+    font-size: medium;
+}
+.playerCardsCnt1
+{
+    /*color:coral;*/
+    font-family: fantasy;
+    /*font-size: medium;*/
+    position: absolute;
+    bottom: 75px;
+    right: 192px;
+    text-align: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 90px;
+    background: rgb(226, 40, 40);
+    font-size: small;
+    display: inline-block;
+    color: whitesmoke;
+    box-shadow: 0px 0px 2px 0px #706a70;
+}
+.playerCardsCnt2
+{
+    /*color:coral;*/
+    font-family: fantasy;
+    /*font-size: medium;*/
+    position: absolute;
+    top: 90px;
+    left: 396px;
+    text-align: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 90px;
+    background: rgb(226, 40, 40);
+    font-size: small;
+    display: inline-block;
+    color: whitesmoke;
+    box-shadow: 0px 0px 2px 0px #706a70;
+}
+.playerCardsCnt3
+{
+    font-family: fantasy;
+    position: absolute;
+    bottom: 75px;
+    left: 136px;
+    text-align: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 90px;
+    background: rgb(226, 40, 40);
+    font-size: small;
+    display: inline-block;
+    color: whitesmoke;
+    box-shadow: 0px 0px 2px 0px #706a70;
+}
+.playerCards0
+{
+    color:coral;
+    font-family: fantasy;
+    font-size: medium;
+}
+.playerCards1
+{
+    color:coral;
+    font-family: fantasy;
+    font-size: medium;
+    position: fixed;
+    bottom: 370px;
+    right: 160px;
+    text-align: center;
+    width: 80px;
+    height: 90px;
+    border: 1px solid black;
+    box-shadow: 0px 0px 1px 0px black;
+}
+.playerCards2
+{
+    color:coral;
+    font-family: fantasy;
+    font-size: medium;
+    position: fixed;
+    top: 100px;
+    left: 680px;
+    text-align: center;
+    width: 80px;
+    height: 90px;
+    border: 1px solid black;
+    box-shadow: 0px 0px 1px 0px black;
+}
+.playerCards3
+{
+    color:coral;
+    font-family: fantasy;
+    font-size: medium;
+    position: fixed;
+    bottom: 370px;
+    left: 160px;
+    text-align: center;
+    width: 80px;
+    height: 90px;
+    border: 1px solid black;
+    box-shadow: 0px 0px 1px 0px black;
+}
+.displaySelectedImage{
+    width: inherit;
+    height: inherit;
+    border-radius: 5px;
+    border: 2px solid orangered;
+    /*filter: drop-shadow(1px 1px 2px #646268);*/
+    margin-bottom: 30px;
+}
+.displayDefaultImage{
+    width: inherit;
+    height: inherit;
+    border-radius: 5px;
+    border: 1px solid #73AD21;
+}
+.rankList{
+    max-height: 50%;
+    max-width: 50%;
+    display: block;
+    background-color: #ffffff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    text-align: center;
+    color: green;
+}
+/*.dropdown-display{*/
+    /*color: rgba(109, 0, 0, 0.64);*/
+    /*border: 1px solid #9d9d9d;*/
+    /*cursor: pointer;*/
+    /*background-color: rgba(197, 214, 67, 0.28);*/
+    /*display: block;*/
+    /*border-radius: 80px;*/
+    /*padding: 10px;*/
+    /*font-family: fantasy;*/
+    /*font-size: medium;*/
+/*}*/
+.dropdown-display {
+    margin: 5%;
+    padding: 5px;
+    border: 1px solid black;
+    background-color: #ead30a;
+    /* padding: 4px; */
+    font-family: 'Cinzel', serif;
+    font-size: large;
+    border-radius: 110px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    left: 490px;
+    top: 215px;
+    position: fixed;
+    color: rgb(0, 0, 0);
+    display: inline-table;
+    text-align: center;
+}
+.dropdown-display-disabled {
+    margin: 5%;
+    padding: 5px;
+    border: 1px solid red;
+    background-color: #ead30a;
+    /* padding: 4px; */
+    font-family: 'Cinzel', serif;
+    font-size: large;
+    border-radius: 110px;
+    width: 40px;
+    height: 40px;
+    left: 490px;
+    top: 215px;
+    position: fixed;
+    color: rgb(0, 0, 0);
+    display: inline-table;
+    text-align: center;
+}
+.rankItem{
+    margin: 5%;
+    padding: 8px;
+    display: inline-block;
+    border: 1px solid transparent;
+    background-color: lightgrey;
+    /* padding: 4px; */
+    /*font-family: fantasy;*/
+    font-family: 'Cinzel', serif;
+    font-size: medium;
+    border-radius: 70px;
+    width: 40px;
+    cursor: pointer;
+}
+.myModal{
+    position: fixed; /* Stay in place */
+    z-index: 10; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    display: block;
+}
+.movepass{
+    color: #5b5c6b;
+    border-radius: 20px 10px 10px 10px;
+    max-width: 100px;
+    display: inline-block;
+    background-color: #d7ead8;
+    padding: 5px;
+    padding-bottom: 2px;
+    box-shadow: 4px 2px 8px 0px #282828;
+}
+.btnPass{
+    color: #000000;
+    border: 1px solid black;
+    margin-top: 5%;
+    margin-right: 1%;
+    border-radius: 200px;
+    background-color: #d7ead8;
+    /* box-shadow: 1px 1px 7px 0px #ad3b47; */
+    font-size: small;
+}
+.movecheck{
+    color: rgb(0, 0, 0);
+    border-radius: 10px 10px 10px 10px;
+    max-width: 100px;
+    display: inline-block;
+    background-color: rgba(255, 33, 8, 0.72);
+    padding: 5px;
+    padding-bottom: 2px;
+    font-weight: bolder;
+    box-shadow: 4px 2px 8px 0px #282828;
+}
+.btnCheck{
+    color: rgb(0, 0, 0);
+    border: 1px solid rgb(0, 0, 0);
+    margin-top: 5%;
+    margin-right: 1%;
+    border-radius: 20px;
+    background-color: rgba(255, 33, 8, 0.72);
+    /* box-shadow: 1px 1px 7px 0px #efefef; */
+    font-size: small;
+}
+.disabledBtnCheck{
+    color: rgb(0, 0, 0);
+    border: 1px solid rgb(0, 0, 0);
+    margin-top: 5%;
+    margin-right: 1%;
+    border-radius: 20px;
+    background-color: rgba(112, 106, 112, 0.72);
+    /* box-shadow: 1px 1px 7px 0px #efefef; */
+    font-size: small;
+}
+.movesubmit{
+    color: #2b542c;
+    border-radius: 10px 20px 10px 10px;
+    max-width: 100px;
+    display: inline-block;
+    background-color: orange;
+    padding: 5px;
+    padding-bottom: 2px;
+    box-shadow: 4px 2px 8px 0px #282828;
+    font-size: larger;
+}
+.btnSubmit{
+    color: #000200;
+    border: 1px solid black;
+    margin-top: 5%;
+    margin-right: 1%;
+    border-radius: 20px;
+    background-color: orange;
+    /* box-shadow: 1px 1px 7px 0px #ad3b47; */
+    font-size: small;
+}
+.disabledBtnSubmit{
+    color: #000200;
+    border: 1px solid black;
+    margin-top: 5%;
+    margin-right: 1%;
+    border-radius: 20px;
+    background-color: rgba(112, 106, 112, 0.72);
+    /* box-shadow: 1px 1px 7px 0px #ad3b47; */
+    font-size: small;
+}
+
+.moveplaying{
+    color: rgb(0, 0, 0);
+    border-radius: 20px 20px 20px 20px;
+    max-width: 100px;
+    display: inline-block;
+    background-color: rgb(174, 179, 183);
+    padding: 5px;
+    padding-bottom: 2px;
+    box-shadow: 4px 2px 8px 0px #282828;
+}
+.displayModal{
+    position: fixed; /* Stay in place */
+    z-index: 10; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    display: block;
+}
+.displayCardUI{
+    max-height: 50%;
+    max-width: 50%;
+    display: block;
+    background-color: #ffffff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+}
+.emptyMoveDiv{
+    color: rgba(234, 234, 234, 0.89);
+    border-radius: 20px 20px 20px 20px;
+    max-width: 100px;
+    display: inline-block;
+    background-color: rgb(119, 121, 123);
+    padding: 5px;
+    padding-bottom: 2px;
+    box-shadow: 4px 2px 8px 0px #282828;
+    visibility: hidden;
+}
+.animateAddingCard0{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateAdd0 1s;
+}
+.animateAddingCard1{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateAdd1 1s;
+}
+.animateAddingCard2{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateAdd2 1s;
+}
+.animateAddingCard3{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateAdd3 1s;
+    /*-webkit-transform: scale(0.5, 0.5) rotate(90deg);*/
+    /*-moz-transform: scale(0.5, 0.5) rotate(90deg);*/
+    /*-ms-transform: scale(0.5, 0.5) rotate(90deg);*/
+    /*-o-transform: scale(0.5, 0.5) rotate(90deg);*/
+    /*transform: scale(0.5, 0.5) rotate(90deg);*/
+}
+.animateDelCard0{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateDel0 1s;
+}
+.animateDelCard1{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateDel1 1s;
+}
+.animateDelCard2{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateDel2 1s;
+}
+.animateDelCard3{
+    max-width:200px;
+    padding: 0px;
+    border:0px;
+    width: 80px;
+    height: 90px;
+    margin-right: 4px;
+    margin-top: 30px;
+    position: relative;
+    animation: animateDel3 1s;
+}
+@keyframes animateDel0 {
+    100%   {background-color:blue; left : 680px; top : 300px;}
+
+    0%  {background-color:red; left: 900px; top: 250px;}
+}
+@keyframes animateDel1 {
+    100%   {background-color:blue; top: 250px;
+        left: 1200px;}
+
+    0%  {background-color:red; left: 900px; top: 250px;}
+}
+@keyframes animateDel2 {
+    100% {
+        background-color: blue;
+        top: 100px;
+        left: 680px;
+    }
+
+    0% {
+        background-color: red;
+        left: 900px; top: 250px;
+    }
+}
+@keyframes animateDel3 {
+    100% {background-color:blue; top: 250px;
+        left: 160px;}
+
+    0%  {background-color:red; left: 900px; top: 250px;}
+}
+@keyframes animateAdd0 {
+    0%   {background-color:blue; left : 680px; top : 300px;}
+
+    100%  {background-color:red; left: 900px; top: 240px;}
+}
+@keyframes animateAdd1 {
+    0%   {background-color:blue; top: 250px;
+        left: 1200px;}
+
+    100%  {background-color:red; left : 900px; top: 240px;}
+}
+@keyframes animateAdd2 {
+    0%   {background-color:blue; top: 95px;
+        left: 680px;}
+
+    100%  {background-color:red; left : 900px; top:240px;}
+}
+@keyframes animateAdd3 {
+    0% {background-color:blue; top: 250px;
+        left: 160px;}
+
+    100%  {background-color:red; left : 900px; top: 240px;}
+}
+.displayTableCard{
+    max-width: 200px;
+    width: 80px;
+    height: 90px;
+    position: fixed;
+    left: 900px;
+    top: 250px;
+    border: 1px solid black;
+    box-shadow: 0px 0px 1px 0px black;
+}
+.displayTableCnt {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    left: 740px;
+    top: 125px;
+    border-radius: 90px;
+    background: rgb(226, 40, 40);
+    font-size: small;
+    display: inline-block;
+    color: whitesmoke;
+    box-shadow: 0px 0px 2px 0px #706a70;
+}
+.optionButtonUI{
+    position: fixed;
+    bottom: 50%;
+    left:20%;
+    right:20%;
+    top: 50%;
+    color: #b4b472;
+    text-align: center;
+    /*font-family: fantasy;*/
+    font-size: medium;
+}
+.tableInfo{
+    position: fixed;
+    left: 400px;
+    top: 300px;
+    border-radius: 90px;
+    display: inline-block;
+    box-shadow: 0px 0px 2px 0px #706a70;
+    background: #ead30a;
+    font-size: medium;
+    color: black;
+    /*font-family: cursive;*/
+}
+.bodyUI{
+    background-image: url("../images/red_wall2.jpg");
+    background-size: cover;
+    font-family: 'Raleway', Sans-Serif;
+}
+.messageBarUI{
+    position: fixed;
+    right: 7px;
+    bottom: 7px;
+    border: 1px solid #e8bcbc;
+    width: 200px;
+    height: 230px;
+    color: black;
+    background-color: azure;
+    /*font-family: sans-serif;*/
+    font-size: small;
+    box-shadow: 0px 0px 9px 0px #0f1007;
+}
+.inputMsg{
+    width: 190px;
+    /* float: right; */
+    margin-left: 3px;
+    margin-right: 3px;
+    margin-bottom: 1px;
+    /* border-top: 1px solid; */
+    border: 0px;
+}
+.messageTabUI-close{
+    background-color: #3a9fd2;
+    position: absolute;
+    right: 7px;
+    bottom: 7px;
+    border: 1px solid #e8bcbc;
+    width: 40px;
+    height: 20px;
+}
+.messageTabUI-open{
+    background-color: #ff2121;
+    position: absolute;
+    right: 7px;
+    bottom: 238px;
+    border: 1px solid #e8bcbc;
+    width: 40px;
+    height: 20px;
+}
+.inputName{
+    position: fixed;
+    left: 40%;
+    width: 25%;
+    top: 20%;
+    text-align: center;
+    font-size: 35px;
+
+}
+.submitName{
+    position: fixed;
+    left: 49%;
+    top: 28%;
+    /* width: 5%; */
+    font-size: 30px;
+}
+.createRoom{
+    position: fixed;
+    left: 20%;
+    top: 50%;
+    font-size: 30px;
+    width: 14%;
+    border-radius: 10px;
+    background: #38d0d0;
+    color: ghostwhite;
+}
+.inputRoom{
+    position: fixed;
+    left: 63%;
+    top: 50%;
+    width: 14%;
+    /* height: 10%; */
+    font-size: 21px;
+    border-radius: 10px;
+    text-align: center;
+}
+.joinRoom{
+    position: fixed;
+    left: 63%;
+    top: 58%;
+    width: 14%;
+    /* height: 10%; */
+    font-size: 30px;
+    border-radius: 10px;
+    background: #38d0d0;
+    color: ghostwhite;
+    /* border: 1px solid navajowhite; */
+    /* right: 30%; */
+    text-align: center;
+}
+@font-face {
+    font-family: font1;
+    src : url("../assets/fonts/fontawesome-webfont.woff")
+}
+.nameIntro{
+    position: fixed;
+    left: 40%;
+    top: 30%;
+    width: 20%;
+    /* height: 10%; */
+    font-size: 40px;
+    color: azure;
+    text-align: center;
+    /* border: 1px solid black; */
+    /* border-radius: 40px; */
+    padding: 10px;
+}
+.roomNameIntro{
+    position: fixed;
+    left: 10%;
+    top: 50%;
+    max-width: 100%;
+    /* height: 10%; */
+    font-size: 20px;
+    color: azure;
+    text-align: center;
+    border: 1px solid black;
+    /* border-radius: 40px; */
+    padding: 10px;
+    background-blend-mode: color-burn;
+    background-color: rgba(200, 255, 204, 0.75);
+    color: #337ab7;
+    /* display: list-item; */
+    /* word-break: break-all; */
+    /* flex-wrap: wrap; */
+    /* float: left; */
+    /* right: 20%; */
+    padding: 40px;
+}

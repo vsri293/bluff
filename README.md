@@ -1,2 +1,15 @@
-# bluff
-bluff game
+# Running it
+
+First, grab the dependencies:
+
+    npm install
+
+Build the applicaiton
+	
+	npm run build
+
+Then run the app like so:
+
+    npm start
+
+And navigate to `localhost:3000` and play !
